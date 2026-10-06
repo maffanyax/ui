@@ -1,5 +1,5 @@
 -- reworked by maffanyax
--- accent #E0218A | mobile icon | smooth drag+resize | keybind list | notifications | config | target hud
+-- this is beta
 local Library = {};
 do
 Library = {
