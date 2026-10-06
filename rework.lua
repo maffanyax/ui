@@ -1,5 +1,5 @@
--- reworked by maffanyax for aveila.cc
--- beta  rewwork
+-- reworked by maffanyax
+-- accent #E0218A | mobile icon | smooth drag+resize | keybind list | notifications | config | target hud | custom cursor
 local Library = {}
 do
 Library = {
