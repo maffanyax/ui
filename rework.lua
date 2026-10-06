@@ -1,5 +1,5 @@
 -- reworked by maffanyax
--- accent #E0218A | mobile icon | smooth drag+resize | keybind list | notifications | config | target hud | custom cursor
+-- reworked for Avelia.cc
 local Library = {}
 do
 Library = {
@@ -107,18 +107,27 @@ local function getInputPos(input)
 	return UserInputService:GetMouseLocation()
 end
 
--- ═══════════════ FIX БАГА С ФОТО: точный замер текста ═══════════════
+-- ═══════════════ FIX БАГА 1: [T]/[H]/[A] наезжает на имя ═══════════════
+-- TextBounds = 0 пока шрифт не загружен -> меряем через TextService (синхронно)
 local function measureWidth(text, size, font)
 	local ok, r = pcall(function() return TextService:GetTextSize(text, size, font, Vector2.new(10000, 1000)) end)
-	return ok and r.X or 0
+	if ok and r.X > 0 then return r.X end
+	return (#tostring(text)) * (size * 0.62)
 end
 local function placeMode(modeLabel, nameLabel, yOffset)
+	if not modeLabel.Parent or not nameLabel.Parent then return end
 	local w = measureWidth(nameLabel.Text, nameLabel.TextSize, nameLabel.FontFace or nameLabel.Font)
 	local x = 15 + w + 6
-	local holder = nameLabel.Parent
-	local maxW = holder and holder.AbsoluteSize.X or 0
+	local maxW = nameLabel.Parent.AbsoluteSize.X
 	if maxW > 90 then x = math.min(x, maxW - 55) end
 	modeLabel.Position = UDim2.new(0, x, 0, yOffset)
+end
+local function scheduleModeFix(modeLabel, nameLabel, yOffset)
+	placeMode(modeLabel, nameLabel, yOffset)
+	task.defer(function() placeMode(modeLabel, nameLabel, yOffset) end)
+	task.delay(0.15, function() placeMode(modeLabel, nameLabel, yOffset) end)
+	task.delay(0.6, function() placeMode(modeLabel, nameLabel, yOffset) end)
+	task.delay(1.5, function() placeMode(modeLabel, nameLabel, yOffset) end)
 end
 
 -- ═══════════════ NOTIFICATIONS ═══════════════
@@ -289,7 +298,7 @@ function NotificationLib:ChangeAccent(color)
 end
 Library.Notifications = NotificationLib.new()
 
--- ═══════════════ KEYBIND LIST ═══════════════
+-- ═══════════════ KEYBIND LIST (FIX БАГА 2: baseFade снимается ОДИН раз) ═══════════════
 local KeybindListLib = {}
 KeybindListLib.__index = KeybindListLib
 KeybindListLib.Accent = Library.Accent
@@ -362,6 +371,8 @@ function KeybindListLib.new(Options)
 	Content.BackgroundTransparency = 1; Content.AutomaticSize = Enum.AutomaticSize.Y
 	UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder; UIListLayout.Padding = UDim.new(0,3)
 	UIPadding.PaddingTop = UDim.new(0,6); UIPadding.PaddingBottom = UDim.new(0,6)
+	-- FIX БАГА 2: оригинальные прозрачности снимаются ОДИН раз при создании
+	local baseFade = makeFadeList(Main)
 	local dragging = false
 	local dragStartMouse = Vector2.zero
 	local dragStartPos = Vector2.zero
@@ -564,14 +575,13 @@ function KeybindListLib.new(Options)
 	function self:SetOpen(bool)
 		if self.Open == bool then return end
 		self.Open = bool
-		local fadeList = makeFadeList(Main)
 		if bool then
 			Main.Visible = true; Scale.Scale = 0.9
-			fadeSetHidden(fadeList)
+			fadeSetHidden(baseFade)
 			TweenService:Create(Scale, TweenInfo.new(0.55, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Scale = 1 }):Play()
-			fadeIn(fadeList, 0.5)
+			fadeIn(baseFade, 0.5)
 		else
-			fadeOut(fadeList, 0.4)
+			fadeOut(baseFade, 0.4)
 			TweenService:Create(Scale, TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.In), { Scale = 0.9 }):Play()
 			task.delay(0.48, function() if not self.Open then Main.Visible = false end end)
 		end
@@ -591,20 +601,19 @@ function KeybindListLib.new(Options)
 			item.AccentBar.BackgroundColor3 = color; item:Update()
 		end
 	end
-	local entranceFade = makeFadeList(Main)
-	fadeSetHidden(entranceFade)
+	fadeSetHidden(baseFade)
 	Scale.Scale = 0.88
 	Main.Position = basePos + UDim2.new(0,6,0,14)
 	task.delay(0.05, function()
 		TweenService:Create(Scale, TweenInfo.new(0.7, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Scale = 1 }):Play()
 		TweenService:Create(Main, TweenInfo.new(0.7, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Position = basePos }):Play()
-		fadeIn(entranceFade, 0.65)
+		fadeIn(baseFade, 0.65)
 	end)
 	return self
 end
 Library.Keybinds = KeybindListLib.new({ Name = "keybinds" })
 
--- ═══════════════ TARGET HUD ═══════════════
+-- ═══════════════ TARGET HUD (+ API: имя / userId / Player) ═══════════════
 local TargetHUDLib = {}
 TargetHUDLib.__index = TargetHUDLib
 TargetHUDLib.Accent = Library.Accent
@@ -621,7 +630,7 @@ function TargetHUDLib.new(Options)
 	local self = setmetatable({}, TargetHUDLib)
 	self.Health = 100; self.Player = nil
 	self.Open = Properties.Open ~= false
-	self.Enabled = true -- master gate (заводской toggle в config)
+	self.Enabled = true
 	self.ThemeObjects = {}; self.FollowOn = false; self.FollowTarget = nil
 	self.FollowSide = Properties.Side or "Top"; self.AutoHealth = true
 	local parentGui = game.CoreGui
@@ -799,25 +808,44 @@ function TargetHUDLib.new(Options)
 	end
 	return self
 end
+-- API: резолв цели из Player / userId / ника (Name или DisplayName)
+function TargetHUDLib:ResolveTarget(target)
+	if typeof(target) == "Instance" and target:IsA("Player") then return target end
+	if type(target) == "number" then return Players:GetPlayerByUserId(target) end
+	if type(target) == "string" then
+		local exact = Players:FindFirstChild(target)
+		if exact then return exact end
+		local low = target:lower()
+		for _, plr in ipairs(Players:GetPlayers()) do
+			if plr.Name:lower() == low or plr.DisplayName:lower() == low then return plr end
+		end
+	end
+	return nil
+end
 function TargetHUDLib:SetPlayer(target)
+	local resolved = self:ResolveTarget(target)
 	local name, displayName, userId
-	if typeof(target) == "Instance" and target:IsA("Player") then
-		self.Player = target
-		name, displayName, userId = target.Name, target.DisplayName, target.UserId
+	if resolved then
+		self.Player = resolved
+		name, displayName, userId = resolved.Name, resolved.DisplayName, resolved.UserId
 	elseif type(target) == "number" then
 		userId = target
 		local okName, n = pcall(function() return Players:GetNameFromUserIdAsync(target) end)
 		name = (okName and n) or "unknown"; displayName = name
+	elseif type(target) == "string" then
+		name, displayName, userId = target, target, 0
 	else return end
 	if self._swapTween then self._swapTween:Cancel() end
 	fadeOut(self._contentFade, 0.18)
 	task.delay(0.16, function()
 		self.DisplayName.Text = displayName
 		self.Username.Text = "@" .. name
-		local ok, img = pcall(function()
-			return Players:GetUserThumbnailAsync(userId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
-		end)
-		if ok then self.Avatar.Image = img end
+		if userId and userId ~= 0 then
+			local ok, img = pcall(function()
+				return Players:GetUserThumbnailAsync(userId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+			end)
+			if ok then self.Avatar.Image = img end
+		end
 		self.Avatar.Position = UDim2.new(0,10,0,16)
 		self.DisplayName.Position = UDim2.new(0,84,0,20)
 		self.Username.Position = UDim2.new(0,84,0,39)
@@ -829,13 +857,14 @@ function TargetHUDLib:SetPlayer(target)
 	end)
 end
 function TargetHUDLib:SetFollow(target, side)
-	self.FollowTarget = target or nil
-	self.FollowOn = target ~= nil
+	local resolved = self:ResolveTarget(target)
+	self.FollowTarget = resolved or nil
+	self.FollowOn = resolved ~= nil
 	if side then self.FollowSide = side end
-	if self.FollowOn and typeof(target) == "Instance" and target:IsA("Player") then
-		self:SetPlayer(target)
-	end
+	if self.FollowOn then self:SetPlayer(resolved) end
 end
+function TargetHUDLib:SetFollowByName(name, side) return self:SetFollow(name, side) end
+function TargetHUDLib:SetTargetByName(name, side) return self:SetFollow(name, side) end
 function TargetHUDLib:SetFollowSide(side) self.FollowSide = side end
 function TargetHUDLib:SetHealth(value) self._applyHealth(value, true) end
 function TargetHUDLib:SetOpen(bool)
@@ -866,7 +895,7 @@ function TargetHUDLib:ChangeAccent(color)
 end
 Library.TargetHUD = TargetHUDLib.new({ Name = "target", Open = false })
 
--- ═══════════════ CUSTOM CURSOR MODULE (синхрон с меню) ═══════════════
+-- ═══════════════ CUSTOM CURSOR (FIX БАГА 3: по умолчанию ВЫКЛЮЧЕН) ═══════════════
 local CursorModule = {}
 CursorModule.__index = CursorModule
 CursorModule.DefaultIcon = "rbxassetid://74305907370412"
@@ -878,10 +907,10 @@ function CursorModule.new()
 	local self = setmetatable({}, CursorModule)
 	self.Color = Color3.new(1,1,1)
 	self.HoverColor = Color3.new(1,1,1)
-	self.Enabled = true
-	self.Open = true
+	self.Enabled = false -- FIX: с завода выключен
+	self.Open = false
 	self._hovering = false; self._pressed = false
-	UserInputService.MouseIconEnabled = false
+	UserInputService.MouseIconEnabled = true
 	local parentGui = game.CoreGui
 	if RunService:IsStudio() then parentGui = Players.LocalPlayer:WaitForChild("PlayerGui") end
 	local ScreenGui = Instance.new("ScreenGui")
@@ -902,6 +931,7 @@ function CursorModule.new()
 	Cursor.ImageColor3 = self.Color
 	Cursor.ScaleType = Enum.ScaleType.Fit
 	Cursor.ZIndex = 10000
+	Cursor.Visible = false
 	local startMouse = UserInputService:GetMouseLocation()
 	Cursor.Position = UDim2.fromOffset(startMouse.X, startMouse.Y)
 	Cursor.Parent = ScreenGui
@@ -1246,7 +1276,7 @@ function Library:SetOpen(bool)
 		TweenService:Create(Library.Gradient, TweenInfo.new(0.25, Enum.EasingStyle.Quad, bool and Enum.EasingDirection.Out or Enum.EasingDirection.In), {Position = bool and UDim2.new(0.5,0,0,2) or UDim2.new(1,0,0,2)}):Play()
 		TweenService:Create(Library.Gradient, TweenInfo.new(0.25, Enum.EasingStyle.Quad, bool and Enum.EasingDirection.Out or Enum.EasingDirection.In), {Size = bool and UDim2.new(0.5,0,0,1) or UDim2.new(0,0,0,1)}):Play()
 	end)
-	if Library.Cursor then Library.Cursor:SyncMenu() end -- FIX: курсор прячется/появляется с меню
+	if Library.Cursor then Library.Cursor:SyncMenu() end
 end
 function Library:ChangeAccent(Color)
 	Library.Accent = Color
@@ -1300,8 +1330,8 @@ function Library:NewPicker(default, defaultalpha, parent, count, flag, callback)
 			oldcolor = hsv
 			Icon.BackgroundColor3 = hsv
 			if not nopos and setcolor then Sat.BackgroundColor3 = Color3.fromHSV(hue, 1, 1) end
-			if flag then Library.Flags[flag] = Library:RGBA(hsv.r*255, hsv.g*255, hsv.b*255, alpha) end
-			callback(Library:RGBA(hsv.r*255, hsv.g*255, hsv.b*255, alpha))
+			if flag then Library.Flags[flag] = Library:RGBA(hsv.R*255, hsv.G*255, hsv.B*255, alpha) end
+			callback(Library:RGBA(hsv.R*255, hsv.G*255, hsv.B*255, alpha))
 		end
 	end
 	Flags[flag] = set
@@ -1907,7 +1937,7 @@ function Sections:Toggle(Options)
 		Mode.Text = Keybind.Mode == "Hold" and "[H]" or Keybind.Mode == "Toggle" and "[T]" or "[A]"
 		Mode.TextColor3 = Color3.new(1,1,1); Mode.FontFace = Library.UIFont; Mode.TextSize = Library.FontSize
 		Mode.ZIndex = 105; Mode.TextXAlignment = Enum.TextXAlignment.Left
-		placeMode(Mode, TextLabel, 0) -- FIX БАГА С ФОТО
+		scheduleModeFix(Mode, TextLabel, 0) -- FIX БАГА 1
 		local kbItem = Library.Keybinds:Add(kbName, Keybind.State, Keybind.Mode, false, nil)
 		local function set(newkey)
 			if string.find(tostring(newkey), "Enum") then
@@ -1994,8 +2024,6 @@ function Sections:Toggle(Options)
 		Library.Flags[Keybind.Flag .. "_KEY_STATE"] = Keybind.Mode
 		Flags[Keybind.Flag] = set; Flags[Keybind.Flag .. "_KEY"] = set; Flags[Keybind.Flag .. "_KEY_STATE"] = set
 		function Keybind:Set(key) set(key) end
-		task.defer(function() placeMode(Mode, TextLabel, 0) end)
-		task.delay(1.2, function() if Mode.Parent then placeMode(Mode, TextLabel, 0) end end)
 		return Keybind
 	end
 	function Toggle:Colorpicker(Properties)
@@ -2351,7 +2379,7 @@ function Sections:Keybind(Options)
 	Mode.Text = Keybind.Mode == "Hold" and "[H]" or Keybind.Mode == "Toggle" and "[T]" or "[A]"
 	Mode.TextColor3 = Color3.new(1,1,1); Mode.FontFace = Library.UIFont; Mode.TextSize = Library.FontSize
 	Mode.ZIndex = 105; Mode.TextXAlignment = Enum.TextXAlignment.Left
-	placeMode(Mode, Title, -1) -- FIX БАГА С ФОТО
+	scheduleModeFix(Mode, Title, -1) -- FIX БАГА 1
 	local kbItem = Library.Keybinds:Add(Keybind.Name, Keybind.State, Keybind.Mode, false, nil)
 	local function set(newkey)
 		if string.find(tostring(newkey), "Enum") then
@@ -2438,8 +2466,6 @@ function Sections:Keybind(Options)
 	Library.Flags[Keybind.Flag .. "_KEY_STATE"] = Keybind.Mode
 	Flags[Keybind.Flag] = set; Flags[Keybind.Flag .. "_KEY"] = set; Flags[Keybind.Flag .. "_KEY_STATE"] = set
 	function Keybind:Set(key) set(key) end
-	task.defer(function() placeMode(Mode, Title, -1) end)
-	task.delay(1.2, function() if Mode.Parent then placeMode(Mode, Title, -1) end end)
 	return Keybind
 end
 function Sections:Textbox(Options)
