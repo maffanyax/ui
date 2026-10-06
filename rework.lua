@@ -1,10 +1,11 @@
 -- reworked by maffanyax
--- this is beta
-local Library = {};
+-- bera rework
+local Library = {}
 do
 Library = {
 	Open = true;
-	Folders = { main = "Avelia.cc"; configs = "Avelia.cc/cfgs"; };
+	Minimized = false;
+	Folders = { main = "Avelia.cc", configs = "Avelia.cc/cfgs" };
 	Accent = Color3.fromRGB(224, 33, 138);
 	Pages = {}; Sections = {}; Flags = {};
 	UnNamedFlags = 0; ThemeObjects = {}; Instances = {};
@@ -38,27 +39,23 @@ Library = {
 	UIFont = Font.fromEnum(Enum.Font.GothamBold);
 	FontSize = 12;
 }
-
-local Flags = {}; local Dropdowns = {}; local Pickers = {}; local VisValues = {};
+local Flags = {}; local Dropdowns = {}; local Pickers = {}; local VisValues = {}
 Library.__index = Library
 Library.Pages.__index = Library.Pages
 Library.Sections.__index = Library.Sections
-
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
+local TextService = game:GetService("TextService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 local IS_TOUCH = UserInputService.TouchEnabled
 local IS_MOBILE = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
-
 local COLOR_GRADIENT_END = Color3.new(0.04313725605607033, 0.04313725605607033, 0.04313725605607033)
 
--- ═══════════════════════════════════════════════════════════
--- SHARED FADE SYSTEM
--- ═══════════════════════════════════════════════════════════
+-- ═══════════════ SHARED FADE SYSTEM ═══════════════
 local function makeFadeList(root)
 	local list = {}
 	for _, d in ipairs(root:GetDescendants()) do
@@ -110,9 +107,21 @@ local function getInputPos(input)
 	return UserInputService:GetMouseLocation()
 end
 
--- ═══════════════════════════════════════════════════════════
--- NOTIFICATIONS (notfic.txt)
--- ═══════════════════════════════════════════════════════════
+-- ═══════════════ FIX БАГА С ФОТО: точный замер текста ═══════════════
+local function measureWidth(text, size, font)
+	local ok, r = pcall(function() return TextService:GetTextSize(text, size, font, Vector2.new(10000, 1000)) end)
+	return ok and r.X or 0
+end
+local function placeMode(modeLabel, nameLabel, yOffset)
+	local w = measureWidth(nameLabel.Text, nameLabel.TextSize, nameLabel.FontFace or nameLabel.Font)
+	local x = 15 + w + 6
+	local holder = nameLabel.Parent
+	local maxW = holder and holder.AbsoluteSize.X or 0
+	if maxW > 90 then x = math.min(x, maxW - 55) end
+	modeLabel.Position = UDim2.new(0, x, 0, yOffset)
+end
+
+-- ═══════════════ NOTIFICATIONS ═══════════════
 local NotificationLib = {}
 NotificationLib.__index = NotificationLib
 NotificationLib.Accent = Library.Accent
@@ -280,9 +289,7 @@ function NotificationLib:ChangeAccent(color)
 end
 Library.Notifications = NotificationLib.new()
 
--- ═══════════════════════════════════════════════════════════
--- KEYBIND LIST (keybind.txt) + smooth drag как у главного окна
--- ═══════════════════════════════════════════════════════════
+-- ═══════════════ KEYBIND LIST ═══════════════
 local KeybindListLib = {}
 KeybindListLib.__index = KeybindListLib
 KeybindListLib.Accent = Library.Accent
@@ -355,8 +362,6 @@ function KeybindListLib.new(Options)
 	Content.BackgroundTransparency = 1; Content.AutomaticSize = Enum.AutomaticSize.Y
 	UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder; UIListLayout.Padding = UDim.new(0,3)
 	UIPadding.PaddingTop = UDim.new(0,6); UIPadding.PaddingBottom = UDim.new(0,6)
-
-	-- // ПЛАВНЫЙ ДРАГГ (та же система, что и у главного окна)
 	local dragging = false
 	local dragStartMouse = Vector2.zero
 	local dragStartPos = Vector2.zero
@@ -403,7 +408,6 @@ function KeybindListLib.new(Options)
 		else kbCurrentPos = Vector2.new(kbCurrentPos.X, kbCurrentPos.Y + py*alpha) end
 		Main.Position = UDim2.fromOffset(kbCurrentPos.X, kbCurrentPos.Y)
 	end)
-
 	local function refreshTitle()
 		local active = 0
 		for _, it in ipairs(self.Items) do if it.State then active = active + 1 end end
@@ -436,7 +440,6 @@ function KeybindListLib.new(Options)
 	end
 	UserInputService.InputBegan:Connect(function(input, gp) if gp then return end CheckKey(input, true) end)
 	UserInputService.InputEnded:Connect(function(input, gp) if gp then return end CheckKey(input, false) end)
-
 	local LayoutOrder = 0
 	function self:Add(Name, Key, Mode, State, Callback)
 		local list = self
@@ -601,9 +604,7 @@ function KeybindListLib.new(Options)
 end
 Library.Keybinds = KeybindListLib.new({ Name = "keybinds" })
 
--- ═══════════════════════════════════════════════════════════
--- TARGET HUD (targethud.txt)
--- ═══════════════════════════════════════════════════════════
+-- ═══════════════ TARGET HUD ═══════════════
 local TargetHUDLib = {}
 TargetHUDLib.__index = TargetHUDLib
 TargetHUDLib.Accent = Library.Accent
@@ -620,6 +621,7 @@ function TargetHUDLib.new(Options)
 	local self = setmetatable({}, TargetHUDLib)
 	self.Health = 100; self.Player = nil
 	self.Open = Properties.Open ~= false
+	self.Enabled = true -- master gate (заводской toggle в config)
 	self.ThemeObjects = {}; self.FollowOn = false; self.FollowTarget = nil
 	self.FollowSide = Properties.Side or "Top"; self.AutoHealth = true
 	local parentGui = game.CoreGui
@@ -723,9 +725,13 @@ function TargetHUDLib.new(Options)
 		end
 	end
 	self._applyHealth = applyHealth
-	-- // FOLLOW
 	local currentPos = nil; local smoothHp = nil
 	RunService.RenderStepped:Connect(function(dt)
+		if not self.Enabled then
+			if self.Open then self:SetOpen(false) end
+			currentPos = nil; smoothHp = nil
+			return
+		end
 		if not self.FollowOn or not self.FollowTarget then
 			currentPos = nil; smoothHp = nil; return
 		end
@@ -764,7 +770,6 @@ function TargetHUDLib.new(Options)
 			applyHealth(smoothHp, false)
 		end
 	end)
-	-- // Drag
 	local dragging = false; local dragStart, startPos
 	Top.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -781,7 +786,6 @@ function TargetHUDLib.new(Options)
 			Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 		end
 	end)
-	-- // Появление
 	if self.Open then
 		local entranceFade = makeFadeList(Inline)
 		fadeSetHidden(entranceFade)
@@ -862,9 +866,152 @@ function TargetHUDLib:ChangeAccent(color)
 end
 Library.TargetHUD = TargetHUDLib.new({ Name = "target", Open = false })
 
--- ═══════════════════════════════════════════════════════════
--- CONFIG SYSTEM (XOR + Base64, cfg.txt)
--- ═══════════════════════════════════════════════════════════
+-- ═══════════════ CUSTOM CURSOR MODULE (синхрон с меню) ═══════════════
+local CursorModule = {}
+CursorModule.__index = CursorModule
+CursorModule.DefaultIcon = "rbxassetid://74305907370412"
+CursorModule.Size = 34
+CursorModule.HoverScale = 1.15
+CursorModule.ClickScale = 0.86
+CursorModule.FollowSpeed = 32
+function CursorModule.new()
+	local self = setmetatable({}, CursorModule)
+	self.Color = Color3.new(1,1,1)
+	self.HoverColor = Color3.new(1,1,1)
+	self.Enabled = true
+	self.Open = true
+	self._hovering = false; self._pressed = false
+	UserInputService.MouseIconEnabled = false
+	local parentGui = game.CoreGui
+	if RunService:IsStudio() then parentGui = Players.LocalPlayer:WaitForChild("PlayerGui") end
+	local ScreenGui = Instance.new("ScreenGui")
+	ScreenGui.Name = "AveliaCustomCursor"
+	ScreenGui.ResetOnSpawn = false
+	ScreenGui.IgnoreGuiInset = true
+	ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	ScreenGui.DisplayOrder = 2147483647
+	ScreenGui.Enabled = true
+	ScreenGui.Parent = parentGui
+	local Cursor = Instance.new("ImageLabel")
+	Cursor.Name = "Cursor"
+	Cursor.AnchorPoint = Vector2.new(0.5, 0.5)
+	Cursor.BackgroundTransparency = 1
+	Cursor.BorderSizePixel = 0
+	Cursor.Size = UDim2.new(0, self.Size, 0, self.Size)
+	Cursor.Image = self.DefaultIcon
+	Cursor.ImageColor3 = self.Color
+	Cursor.ScaleType = Enum.ScaleType.Fit
+	Cursor.ZIndex = 10000
+	local startMouse = UserInputService:GetMouseLocation()
+	Cursor.Position = UDim2.fromOffset(startMouse.X, startMouse.Y)
+	Cursor.Parent = ScreenGui
+	self.ScreenGui = ScreenGui
+	self.Cursor = Cursor
+	local currentPos = Vector2.new(startMouse.X, startMouse.Y)
+	local targetPos = currentPos
+	UserInputService.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement and self.Open then
+			if UserInputService.MouseIconEnabled then UserInputService.MouseIconEnabled = false end
+		end
+	end)
+	UserInputService.WindowFocused:Connect(function()
+		if self.Open then UserInputService.MouseIconEnabled = false end
+	end)
+	RunService.RenderStepped:Connect(function(dt)
+		if not self.Open then return end
+		if UserInputService.MouseIconEnabled then UserInputService.MouseIconEnabled = false end
+		targetPos = UserInputService:GetMouseLocation()
+		local alpha = 1 - math.exp(-self.FollowSpeed * dt)
+		currentPos = currentPos:Lerp(targetPos, alpha)
+		Cursor.Position = UDim2.fromOffset(currentPos.X, currentPos.Y)
+	end)
+	local function updateHoverState()
+		local gui = Players.LocalPlayer:FindFirstChild("PlayerGui")
+		if not gui then return end
+		local mousePos = UserInputService:GetMouseLocation()
+		local hit = nil
+		local function scan(parent)
+			for _, obj in ipairs(parent:GetChildren()) do
+				if obj:IsA("GuiObject") and obj.Visible then
+					if obj:IsA("GuiButton") then
+						local pos, size = obj.AbsolutePosition, obj.AbsoluteSize
+						if mousePos.X >= pos.X and mousePos.X <= pos.X + size.X
+							and mousePos.Y >= pos.Y and mousePos.Y <= pos.Y + size.Y then
+							hit = obj
+						end
+					end
+					scan(obj)
+				end
+			end
+		end
+		scan(gui)
+		if hit and not self._hovering then
+			self._hovering = true; self:SetHover(true)
+		elseif not hit and self._hovering then
+			self._hovering = false; self:SetHover(false)
+		end
+	end
+	task.spawn(function()
+		while true do
+			if self.Open then updateHoverState() end
+			task.wait(0.05)
+		end
+	end)
+	UserInputService.InputBegan:Connect(function(input, gpe)
+		if gpe then return end
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 then
+			self._pressed = true; self:SetPressed(true)
+		end
+	end)
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 then
+			self._pressed = false; self:SetPressed(false)
+		end
+	end)
+	return self
+end
+function CursorModule:SetHover(on)
+	local targetSize = on and (self.Size * self.HoverScale) or self.Size
+	TweenService:Create(self.Cursor, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		Size = UDim2.new(0, targetSize, 0, targetSize),
+	}):Play()
+end
+function CursorModule:SetPressed(on)
+	local base = self._hovering and (self.Size * self.HoverScale) or self.Size
+	local target = on and (base * self.ClickScale) or base
+	TweenService:Create(self.Cursor, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		Size = UDim2.new(0, target, 0, target),
+	}):Play()
+end
+function CursorModule:SetIcon(id) self.Cursor.Image = id end
+function CursorModule:SetColor(color)
+	self.Color = color
+	if not self._hovering then self.Cursor.ImageColor3 = color end
+end
+function CursorModule:SetHoverColor(color)
+	self.HoverColor = color
+	if self._hovering then self.Cursor.ImageColor3 = color end
+end
+function CursorModule:SyncMenu()
+	local visible = self.Enabled and Library.Open and not Library.Minimized
+	if self.Open ~= visible then
+		self.Open = visible
+		self.Cursor.Visible = visible
+		UserInputService.MouseIconEnabled = not visible
+	end
+end
+function CursorModule:SetEnabled(bool)
+	self.Enabled = bool
+	self:SyncMenu()
+end
+function CursorModule:Destroy()
+	self.Open = false
+	UserInputService.MouseIconEnabled = true
+	if self.ScreenGui then self.ScreenGui:Destroy() end
+end
+Library.Cursor = CursorModule.new()
+
+-- ═══════════════ CONFIG SYSTEM ═══════════════
 local CONFIG_KEY = "K7mP9xQ2vR5tY8nB4wZ6cL1"
 local CFG_ROOT = "Avelia.cc"; local CFG_FOLDER = "Avelia.cc/cfgs"
 local HAS_BIT32 = (type(bit32) == "table" and type(bit32.bxor) == "function")
@@ -983,9 +1130,7 @@ local function cfgList()
 end
 Library.Config = { Save = cfgSave, Load = cfgLoad, Delete = cfgDelete, List = cfgList }
 
--- ═══════════════════════════════════════════════════════════
--- MISC FUNCTIONS
--- ═══════════════════════════════════════════════════════════
+-- ═══════════════ MISC FUNCTIONS ═══════════════
 function Library:Connection(Signal, Callback) return Signal:Connect(Callback) end
 function Library:Disconnect(Connection) Connection:Disconnect() end
 function Library:Round(Number, Float) return Float * math.floor(Number / Float) end
@@ -1035,7 +1180,7 @@ function Library:LoadConfig(Config)
 	local Table = string.split(Config, "\n")
 	local Table2 = {}
 	for _, Value in pairs(Table) do
-		local Table3 = string.split(Value, ":")
+		local Table3 = string.split(Value, ": ")
 		if Table3[1] ~= "ConfigConfig_List" and #Table3 >= 2 then
 			local Val = Table3[2]:sub(2, #Table3[2])
 			if Val:sub(1,3) == "rgb" then
@@ -1101,6 +1246,7 @@ function Library:SetOpen(bool)
 		TweenService:Create(Library.Gradient, TweenInfo.new(0.25, Enum.EasingStyle.Quad, bool and Enum.EasingDirection.Out or Enum.EasingDirection.In), {Position = bool and UDim2.new(0.5,0,0,2) or UDim2.new(1,0,0,2)}):Play()
 		TweenService:Create(Library.Gradient, TweenInfo.new(0.25, Enum.EasingStyle.Quad, bool and Enum.EasingDirection.Out or Enum.EasingDirection.In), {Size = bool and UDim2.new(0.5,0,0,1) or UDim2.new(0,0,0,1)}):Play()
 	end)
+	if Library.Cursor then Library.Cursor:SyncMenu() end -- FIX: курсор прячется/появляется с меню
 end
 function Library:ChangeAccent(Color)
 	Library.Accent = Color
@@ -1115,9 +1261,7 @@ function Library:ChangeAccent(Color)
 	Library.TargetHUD:ChangeAccent(Color)
 end
 
--- ═══════════════════════════════════════════════════════════
--- COLORPICKER
--- ═══════════════════════════════════════════════════════════
+-- ═══════════════ COLORPICKER ═══════════════
 function Library:NewPicker(default, defaultalpha, parent, count, flag, callback)
 	local Icon = Instance.new('TextButton', parent)
 	local Gradient = Instance.new('UIGradient', Icon)
@@ -1198,12 +1342,9 @@ function Library:NewPicker(default, defaultalpha, parent, count, flag, callback)
 	return colorpickertypes, Window
 end
 
--- ═══════════════════════════════════════════════════════════
--- WINDOW / PAGES / SECTIONS / ELEMENTS
--- ═══════════════════════════════════════════════════════════
+-- ═══════════════ WINDOW / PAGES / SECTIONS ═══════════════
 local Pages = Library.Pages
 local Sections = Library.Sections
-
 function Library:Window(Options)
 	local Base = {
 		Pages = {}; Sections = {}; Elements = {};
@@ -1235,8 +1376,6 @@ function Library:Window(Options)
 	table.insert(Library.Instances, version)
 	table.insert(Library.ThemeObjects, Title); table.insert(Library.ThemeObjects, version)
 	ScreenGui.DisplayOrder = 2
-
-	-- // размеры (мобилка адаптив)
 	local viewport = workspace.CurrentCamera.ViewportSize
 	local baseWidth, baseHeight
 	if IS_MOBILE then
@@ -1247,7 +1386,6 @@ function Library:Window(Options)
 	end
 	local startAbsX = math.floor(viewport.X * 0.5 - baseWidth * 0.5)
 	local startAbsY = math.floor(viewport.Y * 0.5 - baseHeight * 0.5)
-
 	Main.Name = "Main"
 	Main.AnchorPoint = Vector2.new(0, 0)
 	Main.Position = UDim2.new(0, startAbsX, 0, startAbsY)
@@ -1274,8 +1412,6 @@ function Library:Window(Options)
 	Library.UIGradient = UIGradient
 	Top.Name = "Top"; Top.Size = UDim2.new(1,0,0,22); Top.BackgroundTransparency = 1
 	Top.BorderSizePixel = 0; Top.AutoButtonColor = false; Top.Text = ""
-
-	-- // ИКОНКА (лого + сворачивание, ui.txt)
 	local ICON_BTN_SIZE = IS_MOBILE and 26 or 24
 	local IconBtn = Instance.new('TextButton', Top)
 	IconBtn.Name = "IconBtn"; IconBtn.AnchorPoint = Vector2.new(0, 0.5)
@@ -1297,15 +1433,12 @@ function Library:Window(Options)
 		else targetColor = Library.Accent end
 		TweenService:Create(IconImg, TweenInfo.new(0.12), { ImageColor3 = targetColor }):Play()
 	end
-
 	Title.Name = "Title"
 	Title.Position = UDim2.new(0, ICON_BTN_SIZE + 8, 0, 0)
 	Title.BackgroundTransparency = 1; Title.Text = Base.Title
 	Title.TextColor3 = Library.Accent; Title.FontFace = Library.UIFont
 	Title.TextSize = Library.FontSize; Title.TextXAlignment = Enum.TextXAlignment.Left
 	Title.RichText = true; Title.TextTruncate = Enum.TextTruncate.AtEnd
-
-	-- // FIX БАГА 1: вкладки стартуют ПОСЛЕ титула (динамически)
 	local titleW = math.min(Title.TextBounds.X, 150)
 	Title.Size = UDim2.new(0, titleW + 2, 1, 0)
 	local pagesX = ICON_BTN_SIZE + 8 + titleW + 12
@@ -1317,7 +1450,6 @@ function Library:Window(Options)
 	UIListLayout.FillDirection = Enum.FillDirection.Horizontal
 	UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	UIListLayout.Padding = UDim.new(0,6)
-
 	Bottom.Name = "Bottom"; Bottom.Position = UDim2.new(0,0,1,-22)
 	Bottom.Size = UDim2.new(1,0,0,22); Bottom.BackgroundTransparency = 1
 	SectionsFrame.Name = "Sections"; SectionsFrame.Position = UDim2.new(0,10,0,13)
@@ -1330,11 +1462,7 @@ function Library:Window(Options)
 	version.TextColor3 = Library.Accent; version.FontFace = Library.UIFont
 	version.TextSize = Library.FontSize; version.TextXAlignment = Enum.TextXAlignment.Left
 	version.RichText = true
-	corner1.CornerRadius = UDim.new(0,2); corner2.CornerRadius = UDim.new(0,2)
-
-	-- ═══════════════════════════════════════════════════════
-	-- FLOAT ICON (сворачивание)
-	-- ═══════════════════════════════════════════════════════
+	corner1.CornerRadius = UDim2.new(0,2).CornerRadius; corner2.CornerRadius = UDim.new(0,2).CornerRadius
 	local FLOAT_SIZE = IS_MOBILE and 64 or 54
 	local FLOAT_ICON_SIZE = IS_MOBILE and 56 or 46
 	local FloatBtn = Instance.new("TextButton", ScreenGui)
@@ -1357,10 +1485,6 @@ function Library:Window(Options)
 		TweenService:Create(FloatIcon, TweenInfo.new(0.15, Enum.EasingStyle.Quad), { ImageColor3 = targetColor, Size = UDim2.new(0,targetIconSize,0,targetIconSize) }):Play()
 	end
 	local isMinimized = false
-
-	-- ═══════════════════════════════════════════════════════
-	-- SMOOTH DRAG + RESIZE (ui.txt)
-	-- ═══════════════════════════════════════════════════════
 	local currentPos = Vector2.new(startAbsX, startAbsY)
 	local currentSize = Vector2.new(baseWidth, baseHeight)
 	local targetPos = Vector2.new(startAbsX, startAbsY)
@@ -1378,7 +1502,6 @@ function Library:Window(Options)
 			math.clamp(p.Y, 0, math.max(0, vp.Y - s.Y))
 		)
 	end
-	-- drag
 	local dragStartMouse = Vector2.zero; local dragStartPos = Vector2.zero
 	Top.InputBegan:Connect(function(input)
 		if resizing or iconPressed then return end
@@ -1400,7 +1523,6 @@ function Library:Window(Options)
 			dragging = false
 		end
 	end)
-	-- resize handle
 	local HANDLE_SIZE = IS_MOBILE and 44 or 36
 	local resizeCorner = Instance.new("TextButton", Main)
 	resizeCorner.Name = "ResizeCorner"; resizeCorner.AnchorPoint = Vector2.new(1,1)
@@ -1465,7 +1587,6 @@ function Library:Window(Options)
 			resizing = false; setBarsState("idle")
 		end
 	end)
-	-- интерполяция
 	local smoothness = IS_MOBILE and 18 or 16
 	RunService.RenderStepped:Connect(function(dt)
 		local alpha = 1 - math.exp(-smoothness * dt)
@@ -1481,7 +1602,6 @@ function Library:Window(Options)
 		else currentPos = Vector2.new(currentPos.X, currentPos.Y + py*alpha) end
 		applyMain()
 	end)
-	-- поворот экрана
 	local lastViewport = workspace.CurrentCamera.ViewportSize
 	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
 		local newViewport = workspace.CurrentCamera.ViewportSize
@@ -1491,22 +1611,24 @@ function Library:Window(Options)
 		if currentSize.X > newViewport.X then targetSize = Vector2.new(newViewport.X - 20, currentSize.Y) end
 		if currentSize.Y > newViewport.Y then targetSize = Vector2.new(currentSize.X, newViewport.Y - 20) end
 	end)
-
-	-- minimize / restore
 	local function minimizeGUI()
 		if isMinimized then return end
 		isMinimized = true
+		Library.Minimized = true
 		Main.Visible = false
 		FloatBtn.Visible = true
 		FloatIcon.Size = UDim2.new(0,0,0,0)
 		TweenService:Create(FloatIcon, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.new(0,FLOAT_ICON_SIZE,0,FLOAT_ICON_SIZE) }):Play()
+		if Library.Cursor then Library.Cursor:SyncMenu() end
 	end
 	local function restoreGUI()
 		if not isMinimized then return end
 		isMinimized = false
+		Library.Minimized = false
 		Main.Visible = true
 		TweenService:Create(FloatIcon, TweenInfo.new(0.15, Enum.EasingStyle.Quad), { Size = UDim2.new(0,0,0,0) }):Play()
 		task.delay(0.15, function() if not isMinimized then FloatBtn.Visible = false end end)
+		if Library.Cursor then Library.Cursor:SyncMenu() end
 	end
 	IconBtn.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -1536,13 +1658,11 @@ function Library:Window(Options)
 	end)
 	FloatBtn.MouseEnter:Connect(function() setFloatState("hover") end)
 	FloatBtn.MouseLeave:Connect(function() setFloatState("idle") end)
-
 	Base.Elements = { Main = Main, Title = Title, Middle = Middle, PageHolder = PagesFrame, SectionHolder = SectionsFrame }
 	Base.Minimize = minimizeGUI; Base.Restore = restoreGUI
 	function Base:SetOpen(bool) Library:SetOpen(bool) end
 	return setmetatable(Base, Library)
 end
-
 function Library:Page(Options)
 	local Page = { Window = self; Open = false; Sections = {}; Elements = {}; Title = Options.Name or "legit" }
 	local Holder = Instance.new('TextButton', Page.Window.Elements.PageHolder)
@@ -1616,7 +1736,6 @@ function Library:Page(Options)
 	Page.Window.Pages[#Page.Window.Pages + 1] = Page
 	return setmetatable(Page, Library.Pages)
 end
-
 function Pages:Section(Options)
 	local Section = {
 		Window = self.Window; Page = self; Open = false; Elements = {};
@@ -1722,14 +1841,12 @@ function Pages:Section(Options)
 	return setmetatable(Section, Library.Sections)
 end
 
--- ═══════════════════════════════════════════════════════════
--- ELEMENTS
--- ═══════════════════════════════════════════════════════════
+-- ═══════════════ ELEMENTS ═══════════════
 function Sections:Toggle(Options)
 	local Properties = Options or {}
 	local Toggle = {
 		Window = self.Window; Page = self.Page; Section = self;
-		Name = Properties.Name or Properties.Title or "toggle"; -- FIX БАГА 2: имя для keybind list
+		Name = Properties.Name or Properties.Title or "toggle";
 		State = Properties.state or false;
 		Callback = Properties.callback or function() end;
 		Flag = Properties.flag or Library.NextFlag();
@@ -1773,7 +1890,6 @@ function Sections:Toggle(Options)
 			Flag = Properties.flag or Library.NextFlag();
 			Binding = nil; Connection = nil;
 		}
-		-- FIX БАГА 2: имя берётся из toggle, если не указано
 		local kbName = Properties.Name or Properties.Title or Toggle.Name
 		local Key; local State = false
 		local Cycle = Keybind.Mode == "Hold" and 1 or Keybind.Mode == "Toggle" and 2 or 3
@@ -1787,12 +1903,11 @@ function Sections:Toggle(Options)
 		Value.Text = "[-]"; Value.TextColor3 = Color3.new(0.3059,0.3059,0.3059)
 		Value.FontFace = Library.UIFont; Value.TextSize = Library.FontSize; Value.ZIndex = 105
 		Value.TextXAlignment = Enum.TextXAlignment.Right
-		Mode.Position = UDim2.new(0, TextLabel.TextBounds.X + 20, 0, 0); Mode.Size = UDim2.new(1,-30,1,0)
-		Mode.BackgroundTransparency = 1
+		Mode.Size = UDim2.new(1,-30,1,0); Mode.BackgroundTransparency = 1
 		Mode.Text = Keybind.Mode == "Hold" and "[H]" or Keybind.Mode == "Toggle" and "[T]" or "[A]"
 		Mode.TextColor3 = Color3.new(1,1,1); Mode.FontFace = Library.UIFont; Mode.TextSize = Library.FontSize
 		Mode.ZIndex = 105; Mode.TextXAlignment = Enum.TextXAlignment.Left
-		-- keybind list: только визуализация (колбэк не дублируется)
+		placeMode(Mode, TextLabel, 0) -- FIX БАГА С ФОТО
 		local kbItem = Library.Keybinds:Add(kbName, Keybind.State, Keybind.Mode, false, nil)
 		local function set(newkey)
 			if string.find(tostring(newkey), "Enum") then
@@ -1815,7 +1930,7 @@ function Sections:Toggle(Options)
 				end
 				Library.Flags[Keybind.Flag .. "_KEY"] = newkey
 			elseif table.find({ "Always", "Toggle", "Hold" }, newkey) then
-				Library.Flags[Keybind.Flag .. "_KEY STATE"] = newkey
+				Library.Flags[Keybind.Flag .. "_KEY_STATE"] = newkey
 				Keybind.Mode = newkey
 				Mode.Text = Keybind.Mode == "Hold" and "[H]" or Keybind.Mode == "Toggle" and "[T]" or "[A]"
 				kbItem:SetMode(newkey)
@@ -1876,10 +1991,11 @@ function Sections:Toggle(Options)
 			elseif Cycle == 3 then set("Always") end
 		end)
 		Library.Flags[Keybind.Flag .. "_KEY"] = Keybind.State
-		Library.Flags[Keybind.Flag .. "_KEY STATE"] = Keybind.Mode
-		Flags[Keybind.Flag] = set; Flags[Keybind.Flag .. "_KEY"] = set; Flags[Keybind.Flag .. "_KEY STATE"] = set
+		Library.Flags[Keybind.Flag .. "_KEY_STATE"] = Keybind.Mode
+		Flags[Keybind.Flag] = set; Flags[Keybind.Flag .. "_KEY"] = set; Flags[Keybind.Flag .. "_KEY_STATE"] = set
 		function Keybind:Set(key) set(key) end
-		task.defer(function() Mode.Position = UDim2.new(0, TextLabel.TextBounds.X + 20, 0, 0) end)
+		task.defer(function() placeMode(Mode, TextLabel, 0) end)
+		task.delay(1.2, function() if Mode.Parent then placeMode(Mode, TextLabel, 0) end end)
 		return Keybind
 	end
 	function Toggle:Colorpicker(Properties)
@@ -1905,7 +2021,6 @@ function Sections:Toggle(Options)
 	Library:Connection(Holder.MouseButton1Click, SetState)
 	return Toggle
 end
-
 function Sections:Slider(Options)
 	local Properties = Options or {}
 	local Slider = {
@@ -1992,7 +2107,6 @@ function Sections:Slider(Options)
 	Flags[Slider.Flag] = Set
 	return Slider
 end
-
 function Sections:List(Options)
 	local Properties = Options or {}
 	local Dropdown = {
@@ -2093,7 +2207,6 @@ function Sections:List(Options)
 	Dropdown:Set(Dropdown.State)
 	return Dropdown
 end
-
 function Sections:Multibox(Options)
 	local Properties = Options or {}
 	local Dropdown = {
@@ -2208,7 +2321,6 @@ function Sections:Multibox(Options)
 	Dropdown:Set(Dropdown.State)
 	return Dropdown
 end
-
 function Sections:Keybind(Options)
 	local Properties = Options or {}
 	local Keybind = {
@@ -2235,10 +2347,11 @@ function Sections:Keybind(Options)
 	Value.Text = "[-]"; Value.TextColor3 = Color3.new(0.3059,0.3059,0.3059)
 	Value.FontFace = Library.UIFont; Value.TextSize = Library.FontSize; Value.ZIndex = 105
 	Value.TextXAlignment = Enum.TextXAlignment.Right
-	Mode.Position = UDim2.new(0, Title.TextBounds.X + 20, 0, -1); Mode.Size = UDim2.new(1,-30,1,0); Mode.BackgroundTransparency = 1
+	Mode.Size = UDim2.new(1,-30,1,0); Mode.BackgroundTransparency = 1
 	Mode.Text = Keybind.Mode == "Hold" and "[H]" or Keybind.Mode == "Toggle" and "[T]" or "[A]"
 	Mode.TextColor3 = Color3.new(1,1,1); Mode.FontFace = Library.UIFont; Mode.TextSize = Library.FontSize
 	Mode.ZIndex = 105; Mode.TextXAlignment = Enum.TextXAlignment.Left
+	placeMode(Mode, Title, -1) -- FIX БАГА С ФОТО
 	local kbItem = Library.Keybinds:Add(Keybind.Name, Keybind.State, Keybind.Mode, false, nil)
 	local function set(newkey)
 		if string.find(tostring(newkey), "Enum") then
@@ -2261,7 +2374,7 @@ function Sections:Keybind(Options)
 			end
 			Library.Flags[Keybind.Flag .. "_KEY"] = newkey
 		elseif table.find({ "Always", "Toggle", "Hold" }, newkey) then
-			Library.Flags[Keybind.Flag .. "_KEY STATE"] = newkey
+			Library.Flags[Keybind.Flag .. "_KEY_STATE"] = newkey
 			Keybind.Mode = newkey
 			Mode.Text = Keybind.Mode == "Hold" and "[H]" or Keybind.Mode == "Toggle" and "[T]" or "[A]"
 			kbItem:SetMode(newkey)
@@ -2322,13 +2435,13 @@ function Sections:Keybind(Options)
 		elseif Cycle == 3 then set("Always") end
 	end)
 	Library.Flags[Keybind.Flag .. "_KEY"] = Keybind.State
-	Library.Flags[Keybind.Flag .. "_KEY STATE"] = Keybind.Mode
-	Flags[Keybind.Flag] = set; Flags[Keybind.Flag .. "_KEY"] = set; Flags[Keybind.Flag .. "_KEY STATE"] = set
+	Library.Flags[Keybind.Flag .. "_KEY_STATE"] = Keybind.Mode
+	Flags[Keybind.Flag] = set; Flags[Keybind.Flag .. "_KEY"] = set; Flags[Keybind.Flag .. "_KEY_STATE"] = set
 	function Keybind:Set(key) set(key) end
-	task.defer(function() Mode.Position = UDim2.new(0, Title.TextBounds.X + 20, 0, -1) end)
+	task.defer(function() placeMode(Mode, Title, -1) end)
+	task.delay(1.2, function() if Mode.Parent then placeMode(Mode, Title, -1) end end)
 	return Keybind
 end
-
 function Sections:Textbox(Options)
 	local Properties = Options or {}
 	local Textbox = {
@@ -2362,7 +2475,6 @@ function Sections:Textbox(Options)
 	Flags[Textbox.Flag] = set
 	return Textbox
 end
-
 function Sections:Button(Options)
 	local Properties = Options or {}
 	local Button = {
@@ -2388,7 +2500,6 @@ function Sections:Button(Options)
 	Textbutton.MouseButton1Up:Connect(function() Textbutton.TextColor3 = Color3.new(0.3059,0.3059,0.3059) end)
 	return Button
 end
-
 function Sections:Colorpicker(Options)
 	local Properties = Options or {}
 	local Colorpicker = {
