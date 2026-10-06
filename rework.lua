@@ -1,5 +1,5 @@
--- reworked by maffanyax
--- bera rework
+-- reworked by maffanyax for aveila.cc
+-- beta  rewwork
 local Library = {}
 do
 Library = {
@@ -1462,7 +1462,7 @@ function Library:Window(Options)
 	version.TextColor3 = Library.Accent; version.FontFace = Library.UIFont
 	version.TextSize = Library.FontSize; version.TextXAlignment = Enum.TextXAlignment.Left
 	version.RichText = true
-	corner1.CornerRadius = UDim2.new(0,2).CornerRadius; corner2.CornerRadius = UDim.new(0,2).CornerRadius
+	corner1.CornerRadius = UDim.new(0,2); corner2.CornerRadius = UDim.new(0,2)
 	local FLOAT_SIZE = IS_MOBILE and 64 or 54
 	local FLOAT_ICON_SIZE = IS_MOBILE and 56 or 46
 	local FloatBtn = Instance.new("TextButton", ScreenGui)
