@@ -207,7 +207,6 @@ NeverLose.GlobalLogo = "rbxassetid://72609578708927";
 NeverLose.ImageColorMapping = "rbxassetid://4155801252";
 
 if getcustomasset then
-	local link = "https://github.com/maffanyax/ui/blob/main/assets/logo.png?raw=true";
 	local dir = 'NLAssets';
 
 	if not isfolder(dir) then
@@ -215,28 +214,28 @@ if getcustomasset then
 	end;
 
 	pcall(function()
-		if not isfile(dir..'/'..'logo.png') then
-			local byte = game:HttpGet(string.format(link,'logo.png'));
-
-			writefile(dir..'/'..'logo.png' , byte);
+		if not isfile(dir..'/logo.png') then
+			-- Прямая ссылка на файл логотипа
+			local byte = game:HttpGet("https://raw.githubusercontent.com/maffanyax/ui/main/assets/logo.png");
+			writefile(dir..'/logo.png' , byte);
 			task.wait();
 		end;
 
-		if isfile(dir..'/'..'logo.png') then
-			NeverLose.GlobalLogo = getcustomasset(dir..'/'..'logo.png')
+		if isfile(dir..'/logo.png') then
+			NeverLose.GlobalLogo = getcustomasset(dir..'/logo.png')
 		end;
 	end);
 
 	pcall(function()
-		if not isfile(dir..'/'..'saturation_value_gradient.png') then
-			local byte = game:HttpGet(string.format(link,'saturation_value_gradient.png'));
-
-			writefile(dir..'/'..'saturation_value_gradient.png' , byte);
+		if not isfile(dir..'/saturation_value_gradient.png') then
+			-- Прямая ссылка на файл градиента
+			local byte = game:HttpGet("https://raw.githubusercontent.com/maffanyax/ui/main/assets/saturation_value_gradient.png");
+			writefile(dir..'/saturation_value_gradient.png' , byte);
 			task.wait();
 		end;
 
-		if isfile(dir..'/'..'saturation_value_gradient.png') then
-			NeverLose.ImageColorMapping = getcustomasset(dir..'/'..'saturation_value_gradient.png')
+		if isfile(dir..'/saturation_value_gradient.png') then
+			NeverLose.ImageColorMapping = getcustomasset(dir..'/saturation_value_gradient.png')
 		end;
 	end);
 end;
