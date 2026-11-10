@@ -198,8 +198,8 @@ NeverLose.Scales = {
 NeverLose.IconColor = Color3.fromRGB(255, 255, 255);
 NeverLose.ScreenGui = GlobalWindow;
 NeverLose.Flags = {};
-NeverLose.AccentColor = Color3.fromRGB(168, 214, 229);
-NeverLose.MainColor = Color3.fromRGB(168, 214, 229);
+NeverLose.AccentColor = Color3.fromRGB(255, 255, 255);
+NeverLose.MainColor = Color3.fromRGB(0, 0, 0);
 NeverLose.RegisiteryColor = {};
 NeverLose.NameRegisitry = {};
 NeverLose.IsMosueOverOtherFrame = false;
@@ -207,7 +207,7 @@ NeverLose.GlobalLogo = "rbxassetid://72609578708927";
 NeverLose.ImageColorMapping = "rbxassetid://4155801252";
 
 if getcustomasset then
-	local link = "https://github.com/4lpaca-pin/NeverLose/blob/main/assets/%s?raw=true";
+	local link = "https://github.com/maffanyax/ui/blob/main/assets/logo.png?raw=true";
 	local dir = 'NLAssets';
 
 	if not isfolder(dir) then
@@ -1249,7 +1249,7 @@ function NeverLose:CreateOptionWindow(Frame: Frame , Zindex)
 	OptionHandler.Name = NeverLose.RandomString();
 	OptionHandler.Parent = NeverLose.ScreenGui
 	OptionHandler.AnchorPoint = Vector2.new(0, 0)
-	OptionHandler.BackgroundColor3 = Color3.fromRGB(20, 22, 27)
+	OptionHandler.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 	OptionHandler.BackgroundTransparency = 0.035
 	OptionHandler.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	OptionHandler.BorderSizePixel = 0
@@ -1266,7 +1266,7 @@ function NeverLose:CreateOptionWindow(Frame: Frame , Zindex)
 	UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
 	UIStroke.Transparency = 0.650
-	UIStroke.Color = Color3.fromRGB(45, 48, 58)
+	UIStroke.Color = Color3.fromRGB(40, 40, 40)
 	UIStroke.Parent = OptionHandler
 
 	NeverLose:AddSignal(UIListLayout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(LPH_NO_VIRTUALIZE(function()
@@ -1384,7 +1384,7 @@ function NeverLose:CreateColorPicker(HandleFrame: Frame)
 	ColorPickerHandler.Name = NeverLose.RandomString();
 	ColorPickerHandler.Parent = NeverLose.ScreenGui
 	ColorPickerHandler.AnchorPoint = Vector2.new(0, 0)
-	ColorPickerHandler.BackgroundColor3 = Color3.fromRGB(20, 22, 27)
+	ColorPickerHandler.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 	ColorPickerHandler.BackgroundTransparency = 0.035
 	ColorPickerHandler.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	ColorPickerHandler.BorderSizePixel = 0
@@ -1412,7 +1412,7 @@ function NeverLose:CreateColorPicker(HandleFrame: Frame)
 	UICorner.Parent = ColorPickerHandler
 
 	UIStroke.Transparency = 0.650
-	UIStroke.Color = Color3.fromRGB(45, 48, 58)
+	UIStroke.Color = Color3.fromRGB(40, 40, 40)
 	UIStroke.Parent = ColorPickerHandler
 
 	SaViMap.Name = NeverLose.RandomString();
@@ -1482,7 +1482,7 @@ function NeverLose:CreateColorPicker(HandleFrame: Frame)
 
 	RGBLabel.Name = NeverLose.RandomString();
 	RGBLabel.Parent = ColorPickerHandler
-	RGBLabel.BackgroundColor3 = Color3.fromRGB(26, 28, 36)
+	RGBLabel.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
 	RGBLabel.BackgroundTransparency = 0.750
 	RGBLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	RGBLabel.BorderSizePixel = 0
@@ -1740,7 +1740,7 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 
 		Toggle.Name = NeverLose.RandomString();
 		Toggle.Parent = Handler
-		Toggle.BackgroundColor3 = Color3.fromRGB(10, 13, 21)
+		Toggle.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 		Toggle.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		Toggle.BorderSizePixel = 0
 		Toggle.ClipsDescendants = true
@@ -1784,7 +1784,7 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 			else
 				NeverLose.PlayAnimate(Toggle,SlowyTween,{
 					BackgroundTransparency = 0,
-					BackgroundColor3 = Color3.fromRGB(10, 13, 21)
+					BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 				})
 
 				NeverLose.PlayAnimate(Circle,SlowyTween,{
@@ -1801,7 +1801,7 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 			else
 				NeverLose.PlayAnimate(Toggle,SlowyTween,{
 					BackgroundTransparency = 1,
-					BackgroundColor3 = Color3.fromRGB(10, 13, 21)
+					BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 				})
 
 				NeverLose.PlayAnimate(Circle,SlowyTween,{
@@ -1902,7 +1902,7 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 
 		Slider.Name = NeverLose.RandomString();
 		Slider.Parent = Handler
-		Slider.BackgroundColor3 = Color3.fromRGB(26, 28, 36)
+		Slider.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
 		Slider.BackgroundTransparency = 1.000
 		Slider.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		Slider.BorderSizePixel = 0
@@ -1917,7 +1917,7 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 		ValueFrame.Name = NeverLose.RandomString();
 		ValueFrame.Parent = Slider
 		ValueFrame.AnchorPoint = Vector2.new(1, 0)
-		ValueFrame.BackgroundColor3 = Color3.fromRGB(26, 28, 36)
+		ValueFrame.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
 		ValueFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		ValueFrame.BorderSizePixel = 0
 		ValueFrame.ClipsDescendants = true
@@ -1929,7 +1929,7 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 		UICorner_2.Parent = ValueFrame
 
 		UIStroke.Transparency = 0.650
-		UIStroke.Color = Color3.fromRGB(45, 48, 58)
+		UIStroke.Color = Color3.fromRGB(40, 40, 40)
 		UIStroke.Parent = ValueFrame
 
 		ValueLabel.Name = NeverLose.RandomString();
@@ -1963,7 +1963,7 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 		SlideFrame.Name = NeverLose.RandomString();
 		SlideFrame.Parent = SlideMain
 		SlideFrame.AnchorPoint = Vector2.new(0, 0.5)
-		SlideFrame.BackgroundColor3 = Color3.fromRGB(30, 29, 36)
+		SlideFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 		SlideFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		SlideFrame.BorderSizePixel = 0
 		SlideFrame.Position = UDim2.new(0, 0, 0.5, 0)
@@ -2304,7 +2304,7 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 		UICorner.Parent = ColorPicker
 
 		UIStroke.Transparency = 0.650
-		UIStroke.Color = Color3.fromRGB(45, 48, 58)
+		UIStroke.Color = Color3.fromRGB(40, 40, 40)
 		UIStroke.Parent = ColorPicker
 
 		ImageLabel.Parent = ColorPicker
@@ -2417,7 +2417,7 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 
 		Keybind.Name = NeverLose.RandomString();
 		Keybind.Parent = Handler
-		Keybind.BackgroundColor3 = Color3.fromRGB(26, 28, 36)
+		Keybind.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
 		Keybind.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		Keybind.BorderSizePixel = 0
 		Keybind.ClipsDescendants = true
@@ -2429,7 +2429,7 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 		UICorner.Parent = Keybind
 
 		UIStroke.Transparency = 0.650
-		UIStroke.Color = Color3.fromRGB(45, 48, 58)
+		UIStroke.Color = Color3.fromRGB(40, 40, 40)
 		UIStroke.Parent = Keybind
 
 		ValueLabel.Name = NeverLose.RandomString();
@@ -2572,7 +2572,7 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 
 		TextInput.Name = NeverLose.RandomString();
 		TextInput.Parent = Handler
-		TextInput.BackgroundColor3 = Color3.fromRGB(26, 28, 36)
+		TextInput.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
 		TextInput.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		TextInput.BorderSizePixel = 0
 		TextInput.ClipsDescendants = true
@@ -2584,7 +2584,7 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 		UICorner.Parent = TextInput
 
 		UIStroke.Transparency = 0.650
-		UIStroke.Color = Color3.fromRGB(45, 48, 58)
+		UIStroke.Color = Color3.fromRGB(40, 40, 40)
 		UIStroke.Parent = TextInput
 
 		TextBox.Parent = TextInput
@@ -2687,7 +2687,7 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 
 		Dropdown.Name = NeverLose.RandomString();
 		Dropdown.Parent = Handler
-		Dropdown.BackgroundColor3 = Color3.fromRGB(26, 28, 36)
+		Dropdown.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
 		Dropdown.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		Dropdown.BorderSizePixel = 0
 		Dropdown.ClipsDescendants = true
@@ -2716,7 +2716,7 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 		UICorner.Parent = Dropdown
 
 		UIStroke.Transparency = 0.650
-		UIStroke.Color = Color3.fromRGB(45, 48, 58)
+		UIStroke.Color = Color3.fromRGB(40, 40, 40)
 		UIStroke.Parent = Dropdown
 
 		BasedLabel.Name = NeverLose.RandomString();
@@ -2813,7 +2813,7 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 			DropdownHandler.Name = NeverLose.RandomString();
 			DropdownHandler.Parent = NeverLose.ScreenGui;
 			DropdownHandler.AnchorPoint = Vector2.new(0.5, 0)
-			DropdownHandler.BackgroundColor3 = Color3.fromRGB(20, 22, 27)
+			DropdownHandler.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 			DropdownHandler.BackgroundTransparency = 0.5
 			DropdownHandler.BorderColor3 = Color3.fromRGB(0, 0, 0)
 			DropdownHandler.BorderSizePixel = 0
@@ -2842,7 +2842,7 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 			UICorner.Parent = DropdownHandler
 
 			UIStroke.Transparency = 0.650
-			UIStroke.Color = Color3.fromRGB(45, 48, 58)
+			UIStroke.Color = Color3.fromRGB(40, 40, 40)
 			UIStroke.Parent = DropdownHandler
 
 			DropdownScrollFrame.Name = NeverLose.RandomString();
@@ -2971,7 +2971,7 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 
 				ItemFrame.Name = NeverLose.RandomString();
 				ItemFrame.Parent = DropdownLib.RootItem
-				ItemFrame.BackgroundColor3 = Color3.fromRGB(29, 31, 38)
+				ItemFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 				ItemFrame.BackgroundTransparency = 1.000
 				ItemFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 				ItemFrame.BorderSizePixel = 0
@@ -3249,7 +3249,7 @@ function NeverLose:CreateToolTips(Container: Frame , Name: string , Content: str
 	local Shadow = NeverLose:CreateShadow(Tooltips);
 
 	Tooltips.Name = NeverLose.RandomString();
-	Tooltips.BackgroundColor3 = Color3.fromRGB(20, 22, 27)
+	Tooltips.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 	Tooltips.BackgroundTransparency = 0.075
 	Tooltips.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	Tooltips.BorderSizePixel = 0
@@ -3262,7 +3262,7 @@ function NeverLose:CreateToolTips(Container: Frame , Name: string , Content: str
 	UICorner.Parent = Tooltips
 
 	UIStroke.Transparency = 0.650
-	UIStroke.Color = Color3.fromRGB(45, 48, 58)
+	UIStroke.Color = Color3.fromRGB(40, 40, 40)
 	UIStroke.Parent = Tooltips
 
 	TooltipName.Name = NeverLose.RandomString();
@@ -3437,7 +3437,7 @@ function NeverLose:RegisiterItem(Frame: Frame , Signel)
 		LineFrame.Name = NeverLose.RandomString();
 		LineFrame.Parent = BasedFrame
 		LineFrame.AnchorPoint = Vector2.new(0.5, 1)
-		LineFrame.BackgroundColor3 = Color3.fromRGB(45, 48, 58)
+		LineFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 		LineFrame.BackgroundTransparency = 0.650
 		LineFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		LineFrame.BorderSizePixel = 0
@@ -3604,7 +3604,7 @@ function NeverLose:RegisiterItem(Frame: Frame , Signel)
 		LineFrame.Name = NeverLose.RandomString();
 		LineFrame.Parent = ButtonFrame
 		LineFrame.AnchorPoint = Vector2.new(0.5, 1)
-		LineFrame.BackgroundColor3 = Color3.fromRGB(45, 48, 58)
+		LineFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 		LineFrame.BackgroundTransparency = 0.650
 		LineFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		LineFrame.BorderSizePixel = 0
@@ -3738,7 +3738,7 @@ function NeverLose:RegisiterItem(Frame: Frame , Signel)
 		LineFrame.Name = NeverLose.RandomString();
 		LineFrame.Parent = UserFrame
 		LineFrame.AnchorPoint = Vector2.new(0.5, 1)
-		LineFrame.BackgroundColor3 = Color3.fromRGB(45, 48, 58)
+		LineFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 		LineFrame.BackgroundTransparency = 0.650
 		LineFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		LineFrame.BorderSizePixel = 0
@@ -3907,7 +3907,7 @@ function NeverLose:CreateWindow(Config)
 	WindowFrame.Name = NeverLose.RandomString();
 	WindowFrame.Parent = NeverLose.ScreenGui;
 	WindowFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-	WindowFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 13)
+	WindowFrame.BackgroundColor3 = WindowFrame.BackgroundColor3 = NeverLose.MainColor
 	WindowFrame.BackgroundTransparency = 0.055
 	WindowFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	WindowFrame.BorderSizePixel = 0
@@ -4226,7 +4226,7 @@ function NeverLose:CreateWindow(Config)
 	LineFrame.Name = NeverLose.RandomString();
 	LineFrame.Parent = HeadFrame
 	LineFrame.AnchorPoint = Vector2.new(0.5, 1)
-	LineFrame.BackgroundColor3 = Color3.fromRGB(45, 48, 58)
+	LineFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 	LineFrame.BackgroundTransparency = 0.650
 	LineFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	LineFrame.BorderSizePixel = 0
@@ -4317,7 +4317,7 @@ function NeverLose:CreateWindow(Config)
 	LineFrame_2.Name = NeverLose.RandomString();
 	LineFrame_2.Parent = BottomFrame
 	LineFrame_2.AnchorPoint = Vector2.new(0.5, 0)
-	LineFrame_2.BackgroundColor3 = Color3.fromRGB(45, 48, 58)
+	LineFrame_2.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 	LineFrame_2.BackgroundTransparency = 0.650
 	LineFrame_2.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	LineFrame_2.BorderSizePixel = 0
@@ -4355,7 +4355,7 @@ function NeverLose:CreateWindow(Config)
 
 	RightMenuFrame.Name = NeverLose.RandomString();
 	RightMenuFrame.Parent = WindowFrame
-	RightMenuFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 13)
+	RightMenuFrame.BackgroundColor3 = NeverLose.MainColor
 	RightMenuFrame.BackgroundTransparency = 0.600
 	RightMenuFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	RightMenuFrame.BorderSizePixel = 0
@@ -4365,7 +4365,7 @@ function NeverLose:CreateWindow(Config)
 	RightMenuFrame.ZIndex = 8
 
 	UIStroke.Transparency = 0.650
-	UIStroke.Color = Color3.fromRGB(45, 48, 58)
+	UIStroke.Color = Color3.fromRGB(40, 40, 40)
 	UIStroke.Parent = RightMenuFrame
 
 	UICorner_4.CornerRadius = UDim.new(0, 13)
@@ -4383,7 +4383,7 @@ function NeverLose:CreateWindow(Config)
 	LineFrame_3.Name = NeverLose.RandomString();
 	LineFrame_3.Parent = RightHeader
 	LineFrame_3.AnchorPoint = Vector2.new(0.5, 1)
-	LineFrame_3.BackgroundColor3 = Color3.fromRGB(45, 48, 58)
+	LineFrame_3.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 	LineFrame_3.BackgroundTransparency = 0.650
 	LineFrame_3.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	LineFrame_3.BorderSizePixel = 0
@@ -4394,7 +4394,7 @@ function NeverLose:CreateWindow(Config)
 	ConfigFrame.Name = NeverLose.RandomString();
 	ConfigFrame.Parent = RightHeader
 	ConfigFrame.AnchorPoint = Vector2.new(0, 0.5)
-	ConfigFrame.BackgroundColor3 = Color3.fromRGB(13, 17, 22)
+	ConfigFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 	ConfigFrame.BackgroundTransparency = 0.750
 	ConfigFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	ConfigFrame.BorderSizePixel = 0
@@ -4403,7 +4403,7 @@ function NeverLose:CreateWindow(Config)
 	ConfigFrame.ZIndex = 9
 
 	UIStroke_2.Transparency = 0.650
-	UIStroke_2.Color = Color3.fromRGB(45, 48, 58)
+	UIStroke_2.Color = Color3.fromRGB(40, 40, 40)
 	UIStroke_2.Parent = ConfigFrame
 
 	UICorner_5.CornerRadius = UDim.new(0, 4)
@@ -4428,7 +4428,7 @@ function NeverLose:CreateWindow(Config)
 
 	LineFrame_4.Name = NeverLose.RandomString();
 	LineFrame_4.Parent = ConfigFrame
-	LineFrame_4.BackgroundColor3 = Color3.fromRGB(45, 48, 58)
+	LineFrame_4.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 	LineFrame_4.BackgroundTransparency = 0.650
 	LineFrame_4.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	LineFrame_4.BorderSizePixel = 0
@@ -5010,7 +5010,7 @@ function NeverLose:CreateWindow(Config)
 			SectionHandler.Name = NeverLose.RandomString();
 			SectionHandler.Parent = SectionFrame
 			SectionHandler.AnchorPoint = Vector2.new(0.5, 0)
-			SectionHandler.BackgroundColor3 = Color3.fromRGB(20, 22, 27)
+			SectionHandler.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 			SectionHandler.BackgroundTransparency = 0.500
 			SectionHandler.BorderColor3 = Color3.fromRGB(0, 0, 0)
 			SectionHandler.BorderSizePixel = 0
@@ -5020,7 +5020,7 @@ function NeverLose:CreateWindow(Config)
 			SectionHandler.ZIndex = 9
 
 			UIStroke.Transparency = 0.650
-			UIStroke.Color = Color3.fromRGB(45, 48, 58)
+			UIStroke.Color = Color3.fromRGB(40, 40, 40)
 			UIStroke.Parent = SectionHandler
 
 			UICorner.CornerRadius = UDim.new(0, 10)
@@ -5205,7 +5205,7 @@ function NeverLose:CreateWindow(Config)
 		ConfigMenu.Name = NeverLose.RandomString();
 		ConfigMenu.Parent = NeverLose.ScreenGui;
 		ConfigMenu.AnchorPoint = Vector2.new(0.5, 0)
-		ConfigMenu.BackgroundColor3 = Color3.fromRGB(20, 22, 27)
+		ConfigMenu.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 		ConfigMenu.BackgroundTransparency = 0.035
 		ConfigMenu.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		ConfigMenu.BorderSizePixel = 0
@@ -5223,7 +5223,7 @@ function NeverLose:CreateWindow(Config)
 		UIListLayout.Padding = UDim.new(0, 4)
 
 		UIStroke.Transparency = 0.650
-		UIStroke.Color = Color3.fromRGB(45, 48, 58)
+		UIStroke.Color = Color3.fromRGB(40, 40, 40)
 		UIStroke.Parent = ConfigMenu
 
 		InputFrame.Name = NeverLose.RandomString();
@@ -5254,7 +5254,7 @@ function NeverLose:CreateWindow(Config)
 		LineFrame.Name = NeverLose.RandomString();
 		LineFrame.Parent = InputFrame
 		LineFrame.AnchorPoint = Vector2.new(0.5, 1)
-		LineFrame.BackgroundColor3 = Color3.fromRGB(45, 48, 58)
+		LineFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 		LineFrame.BackgroundTransparency = 0.650
 		LineFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		LineFrame.BorderSizePixel = 0
@@ -5295,7 +5295,7 @@ function NeverLose:CreateWindow(Config)
 
 		TextInput.Name = NeverLose.RandomString();
 		TextInput.Parent = BasedHandler
-		TextInput.BackgroundColor3 = Color3.fromRGB(26, 28, 36)
+		TextInput.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
 		TextInput.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		TextInput.BorderSizePixel = 0
 		TextInput.ClipsDescendants = true
@@ -5306,7 +5306,7 @@ function NeverLose:CreateWindow(Config)
 		UICorner_2.Parent = TextInput
 
 		UIStroke_2.Transparency = 0.650
-		UIStroke_2.Color = Color3.fromRGB(45, 48, 58)
+		UIStroke_2.Color = Color3.fromRGB(40, 40, 40)
 		UIStroke_2.Parent = TextInput
 
 		TextBox.Parent = TextInput
@@ -5366,7 +5366,7 @@ function NeverLose:CreateWindow(Config)
 		OpenButton.Name = NeverLose.RandomString();
 		OpenButton.Parent = ConfigFrame
 		OpenButton.AnchorPoint = Vector2.new(0, 0.5)
-		OpenButton.BackgroundColor3 = Color3.fromRGB(20, 22, 27)
+		OpenButton.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 		OpenButton.BackgroundTransparency = 1.000
 		OpenButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		OpenButton.BorderSizePixel = 0
@@ -5593,7 +5593,7 @@ function NeverLose:CreateWindow(Config)
 				BasedLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 				UIStroke.Transparency = 0.500
-				UIStroke.Color = Color3.fromRGB(45, 48, 58)
+				UIStroke.Color = Color3.fromRGB(40, 40, 40)
 				UIStroke.Parent = ConfigItemFrame
 
 				local Render = LPH_NO_VIRTUALIZE(function(rst)
@@ -6187,7 +6187,7 @@ function NeverLose:CreateNotification()
 		NotifyFrame.Name = NeverLose.RandomString();
 		NotifyFrame.Parent = ContainerFrame
 		NotifyFrame.AnchorPoint = Vector2.new(1, 0)
-		NotifyFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 27)
+		NotifyFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 		NotifyFrame.BackgroundTransparency = 0.075
 		NotifyFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		NotifyFrame.BorderSizePixel = 0
@@ -6200,7 +6200,7 @@ function NeverLose:CreateNotification()
 		UICorner.Parent = NotifyFrame
 
 		UIStroke.Transparency = 0.650
-		UIStroke.Color = Color3.fromRGB(45, 48, 58)
+		UIStroke.Color = Color3.fromRGB(40, 40, 40)
 		UIStroke.Parent = NotifyFrame
 
 		LogoImage.Name = NeverLose.RandomString();
@@ -6350,7 +6350,7 @@ function NeverLose:CreateLogger()
 		LogFrame.Name = NeverLose.RandomString();
 		LogFrame.Parent = Log
 		LogFrame.AnchorPoint = Vector2.new(0.5, 0)
-		LogFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 27)
+		LogFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 		LogFrame.BackgroundTransparency =  1--0.075
 		LogFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		LogFrame.BorderSizePixel = 0
@@ -6363,7 +6363,7 @@ function NeverLose:CreateLogger()
 		UICorner.Parent = LogFrame
 
 		UIStroke.Transparency = 1--0.650
-		UIStroke.Color = Color3.fromRGB(45, 48, 58)
+		UIStroke.Color = Color3.fromRGB(40, 40, 40)
 		UIStroke.Parent = LogFrame
 
 		LogContent.Name = NeverLose.RandomString();
