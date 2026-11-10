@@ -1776,14 +1776,14 @@ function NeverLose:RegisiterHandler(Handler: Frame , Signal)
 				})
 
 				NeverLose.PlayAnimate(Circle,SlowyTween,{
-					BackgroundColor3 = Color3.fromRGB(80, 80, 80),
+					BackgroundColor3 = Color3.fromRGB(200, 200, 200),
 					BackgroundTransparency = 0,
 					Position = UDim2.new(0.7, 0, 0.5, 0)
 				})
 			else
 				NeverLose.PlayAnimate(Toggle,SlowyTween,{
 					BackgroundTransparency = 0,
-					BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+					BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 				})
 
 				NeverLose.PlayAnimate(Circle,SlowyTween,{
